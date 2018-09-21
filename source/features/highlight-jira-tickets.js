@@ -1,18 +1,15 @@
 import select from 'select-dom';
 
 function highlightJiraTickets() {
-    const branchInfoRegex = /(ENG\-\d+)/;
-    const titles = select.all('.commit-title');
+    const branchInfoRegex = /(ENG[\-\s]\d+)/i;
+    const titles = select.all('.commit-title,.gh-header-title');
 
     for (const title of titles) {
-        title.valueOf();
-        const [,ticket] = title.innerHTML.trim().match(branchInfoRegex)
-        var ticket_url = "https://jira.bbthr.com/browse/" + ticket,
+        const [,ticket_original] = title.innerHTML.trim().match(branchInfoRegex);
+        const ticket = ticket_original.replace(" ", "-"),
+            ticket_url = "https://jira.bbthr.com/browse/" + ticket,
             ticket_link = "<a target=\"_blank\" href=\"" + ticket_url + "\">" + ticket + "</a>";
-        // console.warn(ticket_link);
-        // console.log(title);
-
-        title.innerHTML = title.innerHTML.replace(ticket, ticket_link);
+        title.innerHTML = title.innerHTML.replace(ticket_original, ticket_link);
     }
 }
 export default function () {
