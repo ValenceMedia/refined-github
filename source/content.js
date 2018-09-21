@@ -83,6 +83,7 @@ import hideIssueListAutocomplete from './features/hide-issue-list-autocomplete';
 import userProfileFollowerBadge from './features/user-profile-follower-badge';
 import setDefaultRepositoriesTypeToSources from './features/set-default-repositories-type-to-sources';
 import markPrivateOrgs from './features/mark-private-orgs';
+import highlightJiraTickets from './features/highlight-jira-tickets';
 
 import * as pageDetect from './libs/page-detect';
 import {safeElementReady, enableFeature, safeOnAjaxedPages, injectCustomCSS} from './libs/utils';
@@ -149,6 +150,7 @@ async function onDomReady() {
 	enableFeature(markUnread);
 	enableFeature(addOpenAllNotificationsButton);
 	enableFeature(enableCopyOnY);
+	enableFeature(highlightJiraTickets);
 	enableFeature(addProfileHotkey);
 	enableFeature(makeDiscussionSidebarSticky);
 	enableFeature(closeOutOfViewModals);
