@@ -4,24 +4,21 @@
 	"description": "Simplifies the GitHub interface and adds useful features",
 	"homepage_url": "https://github.com/sindresorhus/refined-github",
 	"manifest_version": 2,
-	"minimum_chrome_version": "60",
+	"minimum_chrome_version": "68",
 	"applications": {
 		"gecko": {
 			"id": "{a4c4eda4-fb84-4a84-b4a1-f7c1cbf2a1ad}",
-			"strict_min_version": "55.0"
+			"strict_min_version": "61.0"
 		}
 	},
 	"permissions": [
 		"storage",
-		"clipboardWrite",
 		"contextMenus",
 		"activeTab",
 		"https://api.github.com/*"
 	],
 	"browser_action": {
-		"default_icon": "icon.png",
-		"default_popup": "options.html",
-		"browser_style": true
+		"default_icon": "icon.png"
 	},
 	"optional_permissions": [
 		"http://*/*",
@@ -49,12 +46,16 @@
 				"https://gist.github.com/*"
 			],
 			"css": [
-				"content.css"
+				"content.css",
+				"features.css"
 			],
 			"js": [
 				"browser-polyfill.min.js",
 				"content.js"
 			]
 		}
+	],
+	"web_accessible_resources": [
+		"resolve-conflicts.js"
 	]
 }

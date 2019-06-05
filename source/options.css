@@ -1,21 +1,27 @@
-body {
-	min-width: 430px; /* Required to size the Browser Action popup */
+html {
+	min-width: 430px;
+	overflow-x: hidden;
 }
+
 :root {
 	--github-green: #28a745;
 	--github-red: #cb2431;
 }
+
 input:not([type='checkbox']):not(:placeholder-shown):valid {
-	color: var(--github-green);
+	color: var(--github-green) !important;
 	border: 1px solid;
 }
+
 input:not([type='checkbox']):invalid {
-	color: var(--github-red);
+	color: var(--github-red) !important;
 	border: 1px solid;
 }
+
 input:not([type='checkbox']),
 textarea {
 	display: block;
+	box-sizing: border-box;
 	width: 100%;
 	font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 	font-size: 11px;
@@ -24,12 +30,15 @@ textarea {
 	-moz-tab-size: 4 !important;
 	tab-size: 4 !important;
 }
+
 input[type='checkbox'] {
 	vertical-align: -0.16em;
 }
+
 [name='personalToken'] {
 	width: 50% !important; /* https://github.com/sindresorhus/refined-github/issues/1374#issuecomment-397906701 */
 }
+
 .small {
 	font-size: 0.9em;
 }
@@ -50,28 +59,34 @@ h2 ~ h2 {
 .only-firefox {
 	display: none;
 }
+
 @-moz-document url-prefix('') {
+	:root {
+		background: none !important;
+	}
+
 	:root h2 {
 		font-weight: normal;
 	}
-	:root body {
-		font: message-box, sans-serif;
-	}
+
 	:root hr {
-		margin-left: 0;
 		margin-right: 0;
 	}
+
 	body > :not(hr) {
 		margin-left: 6px;
+		margin-right: 6px;
 	}
+
 	input[type='checkbox'] {
 		vertical-align: -41%;
 	}
+
 	.no-firefox {
 		display: none;
 	}
+
 	.only-firefox {
 		display: block;
 	}
 }
-
