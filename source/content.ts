@@ -116,7 +116,6 @@ import './features/edit-files-faster';
 import './features/indented-code-wrapping';
 import './features/update-pr-from-base-branch';
 import './features/hide-disabled-milestone-sorter';
-import './features/full-branch-names';
 import './features/tag-changelog-link';
 import './features/link-to-file-in-file-history';
 import './features/clean-sidebar';
@@ -144,6 +143,10 @@ import './features/clean-rich-text-editor';
 import './features/highlight-collaborators-and-own-discussions';
 import './features/embed-gist-via-iframe';
 import './features/expand-all-collapsed-code';
+// VE
+import './features/ve-full-branch-names';
+import './features/ve-highlight-jira-tickets';
+import './features/ve-wide-code';
 
 // Add global for easier debugging
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

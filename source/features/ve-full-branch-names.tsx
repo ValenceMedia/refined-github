@@ -8,7 +8,8 @@ function init() {
 
     // Widen the interface
     if (branchList !== null){
-        branchList.style.width=" 75%";
+        branchList.style.width=" 95%";
+        branchList.style.maxWidth=" 95%";
     }
 
     // expand the truncated branch names
@@ -22,7 +23,9 @@ function init() {
     }
 }
 features.add({
-    id: 'full-branch-names',
+    id: __featureName__,
+	description: 'show full branch names without ellipses',
+	screenshot: false,
     load: features.onDomReady,
     init
 });
