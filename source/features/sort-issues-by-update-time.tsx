@@ -1,7 +1,7 @@
 import select from 'select-dom';
+import elementReady from 'element-ready';
 import features from '../libs/features';
 import {getUsername} from '../libs/utils';
-import {safeElementReady} from '../libs/dom-utils';
 
 function getDefaultQuery(link: HTMLAnchorElement, search: URLSearchParams): string {
 	// Query-less URLs imply some queries.
@@ -51,17 +51,21 @@ function init(): void {
 }
 
 async function cleanBar(): Promise<void> {
-	(await safeElementReady<HTMLInputElement>('.header-search-input'))!.value = '';
+	(await elementReady<HTMLInputElement>('.header-search-input'))!.value = '';
 }
+
+const description = 'Change the default sort order of issues and pull requests to "Recently updated"';
 
 features.add({
 	id: 'sort-issues-by-update-time',
+	description,
 	load: features.onAjaxedPages,
 	init
 });
 
 features.add({
 	id: 'sort-issues-by-update-time',
+	description,
 	include: [
 		features.isGlobalDiscussionList
 	],

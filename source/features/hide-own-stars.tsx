@@ -1,10 +1,7 @@
-/*
-Hide other users starring/forking your repos
-*/
 import select from 'select-dom';
+import elementReady from 'element-ready';
 import features from '../libs/features';
 import {getUsername} from '../libs/utils';
-import {safeElementReady} from '../libs/dom-utils';
 
 const observer = new MutationObserver(([{addedNodes}]) => {
 	// Remove events from dashboard
@@ -23,11 +20,12 @@ const observer = new MutationObserver(([{addedNodes}]) => {
 });
 
 async function init(): Promise<void> {
-	observer.observe((await safeElementReady('#dashboard .news'))!, {childList: true});
+	observer.observe((await elementReady('#dashboard .news'))!, {childList: true});
 }
 
 features.add({
 	id: 'hide-own-stars',
+	description: 'Hide other users starring/forking your repos in the dashboard',
 	include: [
 		features.isDashboard
 	],
