@@ -1,9 +1,9 @@
 import React from 'dom-chef';
 import select from 'select-dom';
 import elementReady from 'element-ready';
+import cache from 'webext-storage-cache';
 import features from '../libs/features';
 import * as icons from '../libs/icons';
-import * as cache from '../libs/cache';
 import {getRepoURL} from '../libs/utils';
 import {isRepoRoot, isReleasesOrTags} from '../libs/page-detect';
 
@@ -46,15 +46,14 @@ async function init(): Promise<false | void> {
 		}
 
 		releasesTab.classList.add('js-selected-navigation-item', 'selected');
-		releasesTab.setAttribute('data-selected-links', 'repo_releases'); // Required for ajaxLoad
+		releasesTab.dataset.selectedLinks = 'repo_releases'; // Required for ajaxLoad
 	}
 }
 
-const description = 'Access a repository’s releases using the "Releases" tab or by pressing `g` `r`';
-
 features.add({
-	id: 'releases-tab',
-	description,
+	id: __featureName__,
+	description: 'Adds a `Releases` tab and a keyboard shortcut: `g` `r`.',
+	screenshot: 'https://cloud.githubusercontent.com/assets/170270/13136797/16d3f0ea-d64f-11e5-8a45-d771c903038f.png',
 	include: [
 		features.isRepo
 	],
@@ -66,8 +65,9 @@ features.add({
 });
 
 features.add({
-	id: 'releases-tab',
-	description,
+	id: __featureName__,
+	description: false,
+	screenshot: false,
 	include: [
 		features.isRepo
 	],

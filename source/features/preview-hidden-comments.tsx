@@ -21,7 +21,7 @@ const init = (): void => {
 			summary .discussion-item-copy
 		`, details)!;
 
-		const [, reason]: string[] = header.textContent!.trim().match(/was marked as ([^.]+)/)!;
+		const [, reason = ''] = /was marked as ([^.]+)/.exec(header.textContent!) || [];
 		if (!allowedReasons.includes(reason)) {
 			continue;
 		}
@@ -34,8 +34,9 @@ const init = (): void => {
 };
 
 features.add({
-	id: 'preview-hidden-comments',
-	description: 'Preview hidden comments inline',
+	id: __featureName__,
+	description: 'Preview hidden comments inline.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/52545036-6e271700-2def-11e9-8c0c-b5e0fa6f37dd.png',
 	include: [
 		features.hasComments
 	],

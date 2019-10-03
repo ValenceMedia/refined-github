@@ -15,8 +15,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'extend-diff-expander',
-	description: 'Widen the `Expand diff` button',
+	id: __featureName__,
+	description: 'Widens the `Expand diff` button to be clickable across the screen.',
+	screenshot: 'https://user-images.githubusercontent.com/6978877/34470024-eee4f43e-ef20-11e7-9036-65094bd58960.PNG',
 	include: [
 		features.isPRFiles,
 		features.isCommit

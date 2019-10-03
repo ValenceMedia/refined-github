@@ -2,7 +2,7 @@ import React from 'dom-chef';
 import select from 'select-dom';
 import onDomReady from 'dom-loaded';
 import elementReady from 'element-ready';
-import optionsStorage, {Options} from '../options-storage';
+import optionsStorage, {RGHOptions} from '../options-storage';
 import onNewComments from './on-new-comments';
 import onFileListUpdate from './on-file-list-update';
 import * as pageDetect from './page-detect';
@@ -19,10 +19,14 @@ interface Shortcut {
 }
 
 export interface FeatureDetails {
-	disabled?: string; // If it's disabled, this should be the URL to the issue that explains why
-	id: string;
-	description: string;
-	screenshot?: string;
+	/**
+	If it's disabled, this should be the issue that explains why, as a reference
+	@example '#123'
+	*/
+	disabled?: string;
+	id: typeof __featureName__;
+	description: string | false;
+	screenshot: string | false;
 	include?: BooleanFunction[];
 	exclude?: BooleanFunction[];
 	init: () => false | void | Promise<false | void>;
@@ -37,7 +41,7 @@ export interface FeatureDetails {
  * For this reason `onAjaxedPages` will only call its callback when a *new* page is loaded.
  *
  * Alternatively, use `onAjaxedPagesRaw` if your callback needs to be called at every page
- * change (e.g. to "unmount" a feature / listener) regardless of of *newness* of the page.
+ * change (e.g. to "unmount" a feature / listener) regardless of *newness* of the page.
  */
 async function onAjaxedPagesRaw(callback: () => void): Promise<void> {
 	await onDomReady;
@@ -70,7 +74,7 @@ let log: typeof console.log;
 
 // Rule assumes we don't want to leave it pending:
 // eslint-disable-next-line no-async-promise-executor
-const globalReady: Promise<Options> = new Promise(async resolve => {
+const globalReady: Promise<RGHOptions> = new Promise(async resolve => {
 	await elementReady('body');
 
 	if (pageDetect.is500()) {
@@ -78,8 +82,7 @@ const globalReady: Promise<Options> = new Promise(async resolve => {
 	}
 
 	if (document.body.classList.contains('logged-out')) {
-		console.warn('%cRefined GitHub%c only works when you’re logged in to GitHub.', 'font-weight: bold', '');
-		return;
+		console.warn('%cRefined GitHub%c is only expected to work when you’re logged in to GitHub.', 'font-weight: bold', '');
 	}
 
 	if (select.exists('html.refined-github')) {
@@ -90,7 +93,7 @@ const globalReady: Promise<Options> = new Promise(async resolve => {
 	document.documentElement.classList.add('refined-github');
 
 	// Options defaults
-	const options = (await optionsStorage.getAll()) as Options;
+	const options = await optionsStorage.getAll();
 
 	if (options.customCSS.trim().length > 0) {
 		document.head.append(<style>{options.customCSS}</style>);
@@ -101,8 +104,6 @@ const globalReady: Promise<Options> = new Promise(async resolve => {
 
 	resolve(options);
 });
-
-window.collectFeatures = new Map();
 
 const run = async ({id, include, exclude, init, deinit}: FeatureDetails): Promise<void> => {
 	// If every `include` is false and no exclude is true, don’t run the feature
@@ -128,17 +129,11 @@ const getShortcuts = (): Shortcut[] => [...shortcutMap.values()];
  * Register a new feature
  */
 const add = async (definition: FeatureDetails): Promise<void> => {
-	window.collectFeatures.set(definition.id, definition);
-
-	// In chrome:// pages, just collect the features in `window.collectFeatures`
-	if (!location.protocol.startsWith('http')) {
-		return;
-	}
-
 	/* Input defaults and validation */
 	const {
 		id,
 		description,
+		screenshot,
 		include = [() => true], // Default: every page
 		exclude = [], // Default: nothing
 		load = (fn: VoidFunction) => fn(), // Run it right away
@@ -167,7 +162,7 @@ const add = async (definition: FeatureDetails): Promise<void> => {
 	}
 
 	// Initialize the feature using the specified loading mechanism
-	const details: FeatureDetails = {id, description, include, exclude, init, deinit};
+	const details: FeatureDetails = {id, description, screenshot, include, exclude, init, deinit};
 	if (load === onNewComments) {
 		details.init = async () => {
 			const result = await init();

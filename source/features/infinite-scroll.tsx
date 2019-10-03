@@ -56,8 +56,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'infinite-scroll',
-	description: 'Add infinite scrolling to the dashboard news feed',
+	id: __featureName__,
+	description: 'Automagically expands the newsfeed when you scroll down.',
+	screenshot: false,
 	include: [
 		features.isDashboard
 	],

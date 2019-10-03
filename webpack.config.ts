@@ -1,15 +1,54 @@
+/// <reference types="./source/globals" />
+
 import path from 'path';
-import {readdirSync} from 'fs';
+import {readdirSync, readFileSync} from 'fs';
 import webpack from 'webpack';
+import SizePlugin from 'size-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-// @ts-ignore
-import SizePlugin from 'size-plugin';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+
+function parseFeatureDetails(name: string): FeatureInfo {
+	const content = readFileSync(`source/features/${name}.tsx`, {encoding: 'utf-8'});
+	const fields = ['disabled', 'description', 'screenshot'] as const;
+
+	const feature: Partial<FeatureInfo> = {name};
+	for (const field of fields) {
+		const [, value]: string[] | [] = new RegExp(`\n\t${field}: '([^\\n]+)'`).exec(content) || [];
+		if (value) {
+			const validValue = value.trim().replace(/\\'/g, '’'); // Catch trailing spaces and incorrect apostrophes
+			if (value !== validValue) {
+				throw new Error(`
+Invalid characters found in \`${name}\`. Apply this patch:
+
+- ${field}: '${value}'
++ ${field}: '${validValue}'
+`);
+			}
+
+			feature[field] = value.replace(/\\\\/g, '\\');
+		} else if (field === 'description') {
+			throw new Error(`Description wasn't found in the \`${name}\` feature`);
+		}
+	}
+
+	return feature as FeatureInfo;
+}
+
+function getFeatures(): string[] {
+	return readdirSync(path.join(__dirname, 'source/features'))
+		.filter(filename => filename.endsWith('.tsx'))
+		.map(filename => filename.replace('.tsx', ''));
+}
 
 module.exports = (_env: string, argv: Record<string, boolean | number | string>): webpack.Configuration => ({
 	devtool: 'source-map',
-	stats: 'errors-only',
+	stats: {
+		all: false,
+		errors: true,
+		builtAt: true
+	},
 	entry: {
 		content: './source/content',
 		background: './source/background',
@@ -23,26 +62,7 @@ module.exports = (_env: string, argv: Record<string, boolean | number | string>)
 	module: {
 		rules: [
 			{
-				test: /options-storage/,
-				loader: 'string-replace-loader',
-				options: {
-					search: '__featuresList__',
-					replace: (() => {
-						const features = [];
-
-						const directoryPath = path.join(__dirname, 'source/features');
-						for (const filename of readdirSync(directoryPath)) {
-							if (filename.endsWith('.tsx')) {
-								features.push(filename.replace('.tsx', ''));
-							}
-						}
-
-						return JSON.stringify(features);
-					})()
-				}
-			},
-			{
-				test: /\.(js|ts|tsx)$/,
+				test: /\.tsx?$/,
 				use: [
 					{
 						loader: 'ts-loader',
@@ -53,7 +73,10 @@ module.exports = (_env: string, argv: Record<string, boolean | number | string>)
 
 								// With this, TS will error but the file will still be generated (on watch only)
 								noEmitOnError: argv.watch === false
-							}
+							},
+
+							// Make compilation faster with `fork-ts-checker-webpack-plugin`
+							transpileOnly: true
 						}
 					}
 				],
@@ -69,10 +92,29 @@ module.exports = (_env: string, argv: Record<string, boolean | number | string>)
 		]
 	},
 	plugins: [
-		new MiniCssExtractPlugin({
-			filename: 'features.css'
+		new ForkTsCheckerWebpackPlugin(),
+		new webpack.DefinePlugin({
+			// Passing `true` as the second argument makes these values dynamic — so every file change will update their value.
+			// @ts-ignore
+			__featuresList__: webpack.DefinePlugin.runtimeValue(() => {
+				return JSON.stringify(getFeatures());
+			}, true),
+			// @ts-ignore
+			__featuresInfo__: webpack.DefinePlugin.runtimeValue(() => {
+				return JSON.stringify(getFeatures().map(parseFeatureDetails));
+			}, true),
+
+			// @ts-ignore
+			__featureName__: webpack.DefinePlugin.runtimeValue(({module}) => {
+				return JSON.stringify(path.basename(module.resource, '.tsx'));
+			})
 		}),
-		new SizePlugin(),
+		new MiniCssExtractPlugin({
+			filename: '[name].css'
+		}),
+		new SizePlugin({
+			writeFile: false
+		}),
 		new CopyWebpackPlugin([
 			{
 				from: '*',
@@ -80,7 +122,8 @@ module.exports = (_env: string, argv: Record<string, boolean | number | string>)
 				ignore: [
 					'*.js',
 					'*.ts',
-					'*.tsx'
+					'*.tsx',
+					'*.css'
 				]
 			},
 			{

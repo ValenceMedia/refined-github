@@ -20,8 +20,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'filter-comments-by-you',
-	description: 'Search for issues and pull requests with the "Everything commented by you filter"',
+	id: __featureName__,
+	description: 'Adds a `Everything commented by you` filter in the search box dropdown.',
+	screenshot: 'https://user-images.githubusercontent.com/170270/27501170-f394a304-586b-11e7-92d8-d92d6922356b.png',
 	include: [
 		features.isRepoDiscussionList
 	],

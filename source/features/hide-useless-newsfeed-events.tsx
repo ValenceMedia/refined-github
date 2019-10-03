@@ -6,8 +6,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'hide-useless-newsfeed-events',
-	description: 'Hide useless news feed events like "User started following X"',
+	id: __featureName__,
+	description: 'Hides inutile newsfeed events (commits, forks, new followers).',
+	screenshot: false,
 	include: [
 		features.isDashboard
 	],

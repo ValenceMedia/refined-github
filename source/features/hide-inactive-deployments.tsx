@@ -13,8 +13,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'hide-inactive-deployments',
-	description: 'Hide inactive deployments in pull requests',
+	id: __featureName__,
+	description: 'Hides inactive deployments in PRs.',
+	screenshot: 'https://github.com/sindresorhus/refined-github/issues/1144',
 	include: [
 		features.isPRConversation
 	],

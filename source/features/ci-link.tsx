@@ -5,7 +5,7 @@ import {appendBefore} from '../libs/dom-utils';
 import {getRepoURL, getRepoBranch} from '../libs/utils';
 import fetchDom from '../libs/fetch-dom';
 
-const fetchStatus = onetime(async () => {
+export const fetchCIStatus = onetime(async () => {
 	const url = `/${getRepoURL()}/commits/${getRepoBranch() || ''}`;
 	const icon = await fetchDom<HTMLElement>(url, '.commit-build-statuses');
 
@@ -18,12 +18,12 @@ const fetchStatus = onetime(async () => {
 });
 
 async function init(): Promise<false | void> {
-	const icon = await fetchStatus();
+	const icon = await fetchCIStatus();
 	if (!icon) {
 		return false;
 	}
 
-	if (onetime.callCount(fetchStatus) > 1) {
+	if (onetime.callCount(fetchCIStatus) > 1) {
 		icon.style.animation = 'none';
 	}
 
@@ -32,8 +32,9 @@ async function init(): Promise<false | void> {
 }
 
 features.add({
-	id: 'ci-link',
-	description: 'Add build status and link to CI after the repo’s title',
+	id: __featureName__,
+	description: 'Add build status and link to CI after the repo’s title.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/32562120-d65166e4-c4e8-11e7-90fb-cbaf36e2709f.png',
 	include: [
 		features.isRepo
 	],

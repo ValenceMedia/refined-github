@@ -50,11 +50,10 @@ async function init(): Promise<false | void> {
 	select('.Header-item--full,.HeaderMenu nav')!.after(widget);
 }
 
-const description = 'GitHub shows a widget to create a new Pull Request from a recently-pushed branch, but only on the repo root and on the PR list pages. This feature also adds this widget to the Issues List, Issue page, and Pull Request page.';
-
 features.add({
-	id: 'recently-pushed-branches-enhancements',
-	description,
+	id: __featureName__,
+	description: 'Moves the "Recently-pushed branches" widget to the header to avoid content jumps. Also adds it to more pages in the repo.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/56466173-da517700-643f-11e9-8eb5-9b20017fa613.gif',
 	include: [
 		features.isRepo
 	],
@@ -63,8 +62,9 @@ features.add({
 });
 
 features.add({
-	id: 'recently-pushed-branches-enhancements',
-	description,
+	id: __featureName__,
+	description: false,
+	screenshot: false,
 	include: [
 		features.isRepo
 	],

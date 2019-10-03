@@ -1,62 +1,97 @@
-import OptionsSync from 'webext-options-sync';
+import OptionsSync, {Migration} from 'webext-options-sync';
+import {isBackgroundPage} from 'webext-detect-page';
+import {getAdditionalPermissions} from 'webext-additional-permissions';
 
-export interface Options {
+export interface RGHOptions {
 	customCSS: string;
 	personalToken: string;
 	logging: boolean;
+	minimizedUsers: string;
 	[featureName: string]: string | boolean;
 }
 
-const defaults: Options = {
-	customCSS: '',
-	personalToken: '',
-	logging: false
-};
-
-function featureWasRenamed(from: string, to: string): any { // TODO: any should probably be `Migration` after `webext-options-sync`'s types are fixed
-	return (options: Options) => {
+function featureWasRenamed(from: string, to: string): Migration<RGHOptions> {
+	return (options: RGHOptions) => {
 		if (typeof options[`feature:${from}`] === 'boolean') {
 			options[`feature:${to}`] = options[`feature:${from}`];
 		}
 	};
 }
 
-const options = new OptionsSync();
+const defaults: RGHOptions = {
+	customCSS: '',
+	personalToken: '',
+	logging: false,
+	minimizedUsers: ''
+};
 
-// This file maybe be included twice, (#2098) but we don't need the migrations to run more than once
-let migrationsRun = false;
+// This variable is replaced at build time with the list
+for (const feature of __featuresList__) {
+	defaults[`feature:${feature}`] = true;
+}
 
-// Definitions aren't used in the content script
-if (!location.protocol.startsWith('http') && !migrationsRun) {
-	migrationsRun = true;
+const migrations = [
+	featureWasRenamed('linkify-code', 'linkify-urls-in-code'), // Merged on September 1st
+	featureWasRenamed('highlight-collaborators-in-lists', 'highlight-collaborators-and-own-discussions'), // Merged on September 20th
 
-	// This variable is replaced at build time with the list
-	// eslint-disable-next-line no-undef
-	for (const feature of __featuresList__) {
-		defaults[`feature:${feature}`] = true;
+	// Removed features will be automatically removed from the options as well
+	OptionsSync.migrations.removeUnused
+];
+
+// Keep this function "dumb". Don't move more "smart" domain selection logic in here
+function getStorageName(host: string): string {
+	if (/(^|\.)github\.com$/.test(host)) {
+		return 'options';
 	}
 
-	options.define({
-		defaults,
-		migrations: [
-			// Drop this migration after July
-			options => {
-				if (typeof options.disabledFeatures !== 'string') {
-					return;
-				}
+	return `options-${host}`;
+}
 
-				for (const feature of options.disabledFeatures.split(/\s+/)) {
-					options[`feature:${feature}`] = false;
-				}
-			},
+function getOptions(host: string): OptionsSync<RGHOptions> {
+	return new OptionsSync({storageName: getStorageName(host), migrations, defaults});
+}
 
-			// Example to for renamed features:
-			featureWasRenamed('fix-squash-and-merge-title', 'sync-pr-commit-title'), // Merged on April 22
+// This should return the options for the current domain or, if called from an extension page, for `github.com`
+export default getOptions(location.protocol.startsWith('http') ? location.host : 'github.com');
 
-			// Removed features will be automatically removed from the options as well
-			OptionsSync.migrations.removeUnused
-		]
+export async function getAllOptions(): Promise<Map<string, OptionsSync<RGHOptions>>> {
+	const optionsByDomain = new Map<string, OptionsSync<RGHOptions>>();
+	optionsByDomain.set('github.com', getOptions('github.com'));
+
+	const {origins} = await getAdditionalPermissions();
+	for (const origin of origins) {
+		const {host} = new URL(origin);
+		optionsByDomain.set(host, getOptions(host));
+	}
+
+	return optionsByDomain;
+}
+
+async function initializeAllOptions(): Promise<void> {
+	// Run migrations for every domain
+	const {origins} = await getAdditionalPermissions();
+	for (const origin of origins) {
+		getOptions(new URL(origin).host);
+	}
+
+	// Add new domains
+	browser.permissions.onAdded!.addListener(({origins}) => {
+		if (origins) {
+			for (const origin of origins) {
+				getOptions(new URL(origin).host);
+			}
+		}
+	});
+
+	// Remove old domains
+	browser.permissions.onRemoved!.addListener(({origins}) => {
+		if (origins) {
+			const optionKeysToRemove = origins.map(origin => getStorageName(new URL(origin).host));
+			browser.storage.sync.remove(optionKeysToRemove);
+		}
 	});
 }
 
-export default options;
+if (isBackgroundPage()) {
+	initializeAllOptions();
+}
