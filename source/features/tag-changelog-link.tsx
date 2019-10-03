@@ -13,8 +13,9 @@ type TagDetails = {
 	tag: string;
 	version: string;
 	namespace: string;
-}
+};
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function getNextPage(): Promise<DocumentFragment> {
 	const nextPageLink = select<HTMLAnchorElement>('.pagination a:last-child');
 	if (nextPageLink) {
@@ -30,7 +31,9 @@ async function getNextPage(): Promise<DocumentFragment> {
 }
 
 function parseTags(element: HTMLElement): TagDetails {
-	const tag = select<HTMLAnchorElement>('[href*="/releases/tag/"]', element)!.pathname.match(/\/releases\/tag\/(.*)/)![1];
+	const {pathname: tagUrl} = select<HTMLAnchorElement>('[href*="/releases/tag/"]', element)!;
+	const tag = /\/releases\/tag\/(.*)/.exec(tagUrl)![1];
+
 	return {
 		element,
 		tag,
@@ -114,8 +117,9 @@ const getPreviousTag = (current: number, allTags: TagDetails[]): string | undefi
 };
 
 features.add({
-	id: 'tag-changelog-link',
-	description: 'See an automatic changelog for each tag or release.',
+	id: __featureName__,
+	description: 'Adds a link to an automatic changelog for each tag/release.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/57081611-ad4a7180-6d27-11e9-9cb6-c54ec1ac18bb.png',
 	include: [
 		features.isReleasesOrTags
 	],

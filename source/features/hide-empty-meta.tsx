@@ -9,8 +9,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'hide-empty-meta',
-	description: 'Hide the placeholder text for when there’s no repo description',
+	id: __featureName__,
+	description: 'Hides the placeholder text in repos without a description.',
+	screenshot: false,
 	include: [
 		features.isRepoRoot
 	],

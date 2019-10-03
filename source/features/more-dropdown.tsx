@@ -13,15 +13,13 @@ const repoUrl = getRepoURL();
 function createDropdown(): void {
 	// Markup copied from native GHE dropdown
 	appendBefore('.reponav', '[href$="settings"]',
-		<div className="reponav-dropdown js-menu-container">
-			<button type="button" className="btn-link reponav-item js-menu-target" aria-expanded="false" aria-haspopup="true">
+		<details className="reponav-dropdown details-overlay details-reset">
+			<summary className="btn-link reponav-item">
 				{'More '}
 				<span className="dropdown-caret"/>
-			</button>
-			<div className="dropdown-menu-content js-menu-content">
-				<div className="dropdown-menu dropdown-menu-se"/>
-			</div>
-		</div>
+			</summary>
+			<details-menu className="dropdown-menu dropdown-menu-se"/>
+		</details>
 	);
 }
 
@@ -75,8 +73,9 @@ async function init(): Promise<void> {
 }
 
 features.add({
-	id: 'more-dropdown',
-	description: 'Access the `Commits`, `Branches`, `Dependencies`, and `Compare` pages from anywhere in a repository',
+	id: __featureName__,
+	description: 'Adds links to `Commits`, `Branches`, `Dependencies`, and `Compare` in a new `More` dropdown.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/55089736-d94f5300-50e8-11e9-9095-329ac74c1e9f.png',
 	include: [
 		features.isRepo
 	],

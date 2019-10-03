@@ -25,16 +25,16 @@ function init(): void | false {
 			</a>
 		);
 
-		// TODO: drop `as` after https://github.com/Microsoft/TSJS-lib-generator/pull/697
-		(rootLink.closest('.commit-links-cell') as HTMLElement).style.width = 'auto';
+		rootLink.closest<HTMLElement>('.commit-links-cell')!.style.width = 'auto';
 
 		groupSiblings(rootLink);
 	}
 }
 
 features.add({
-	id: 'link-to-file-in-file-history',
-	description: 'Link to current file when viewing the history of a file',
+	id: __featureName__,
+	description: 'Adds links to the file itself in a file’s commit list.',
+	screenshot: 'https://user-images.githubusercontent.com/22439276/57195061-b88ddf00-6f6b-11e9-8ad9-13225d09266d.png',
 	include: [
 		features.isCommitList
 	],

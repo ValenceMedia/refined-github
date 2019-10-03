@@ -10,8 +10,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'open-ci-details-in-new-tab',
-	description: 'Open CI details in a new tab',
+	id: __featureName__,
+	description: 'Opens the Checks "details" link in a new tab.',
+	screenshot: false,
 	include: [
 		features.isPR
 	],

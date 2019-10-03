@@ -60,8 +60,13 @@ const api4 = location.hostname === 'github.com' ?
 
 interface GHRestApiOptions {
 	ignoreHTTPStatus?: boolean;
-	method?: 'GET' | 'POST';
+	method?: 'GET' | 'POST' | 'PUT';
 	body?: undefined | JsonObject;
+	headers?: HeadersInit;
+}
+
+interface GHGraphQLApiOptions {
+	allowErrors?: boolean;
 }
 
 const v3defaults: GHRestApiOptions = {
@@ -70,11 +75,15 @@ const v3defaults: GHRestApiOptions = {
 	body: undefined
 };
 
+const v4defaults: GHGraphQLApiOptions = {
+	allowErrors: false
+};
+
 export const v3 = mem(async (
 	query: string,
 	options: GHRestApiOptions = v3defaults
 ): Promise<AnyObject> => {
-	const {ignoreHTTPStatus, method, body} = {...v3defaults, ...options};
+	const {ignoreHTTPStatus, method, body, headers} = {...v3defaults, ...options};
 	const {personalToken} = await settings;
 
 	const response = await fetch(api3 + query, {
@@ -83,23 +92,34 @@ export const v3 = mem(async (
 		headers: {
 			'User-Agent': 'Refined GitHub',
 			Accept: 'application/vnd.github.v3+json',
+			...headers,
 			...(personalToken ? {Authorization: `token ${personalToken}`} : {})
 		}
 	});
 	const textContent = await response.text();
 
 	// The response might just be a 200 or 404, it's the REST equivalent of `boolean`
-	const apiResponse: JsonObject = textContent.length > 0 ? JSON.parse(textContent) : {status: response.status};
+	const apiResponse: JsonObject = textContent.length > 0 ? JSON.parse(textContent) : {};
 
 	if (response.ok || ignoreHTTPStatus) {
-		return apiResponse;
+		return Object.assign(apiResponse, {
+			status: response.status,
+			ok: response.ok
+		});
 	}
 
-	throw getError(apiResponse);
+	throw await getError(apiResponse);
 });
 
-export const v4 = mem(async (query: string): Promise<AnyObject> => {
+export const v4 = mem(async (
+	query: string,
+	options: GHGraphQLApiOptions = v4defaults
+): Promise<AnyObject> => {
 	const {personalToken} = await settings;
+
+	if (/^(query )?{/.test(query.trimStart())) {
+		throw new TypeError('`query` should only be what’s inside \'query {...}\', like \'user(login: "foo") { name }\', but is \n' + query);
+	}
 
 	if (!personalToken) {
 		throw new Error('Personal token required for this feature');
@@ -111,7 +131,7 @@ export const v4 = mem(async (query: string): Promise<AnyObject> => {
 			Authorization: `bearer ${personalToken}`
 		},
 		method: 'POST',
-		body: JSON.stringify({query})
+		body: JSON.stringify({query: `{${query}}`})
 	});
 
 	const apiResponse: GraphQLResponse = await response.json();
@@ -121,7 +141,7 @@ export const v4 = mem(async (query: string): Promise<AnyObject> => {
 		errors = []
 	} = apiResponse;
 
-	if (errors.length > 0) {
+	if (errors.length > 0 && !options.allowErrors) {
 		throw Object.assign(
 			new RefinedGitHubAPIError('GraphQL:', ...errors.map(error => error.message)),
 			apiResponse
@@ -132,7 +152,7 @@ export const v4 = mem(async (query: string): Promise<AnyObject> => {
 		return data;
 	}
 
-	throw getError(apiResponse as JsonObject);
+	throw await getError(apiResponse as JsonObject);
 });
 
 async function getError(apiResponse: JsonObject): Promise<RefinedGitHubAPIError> {

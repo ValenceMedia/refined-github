@@ -1,7 +1,7 @@
 import select from 'select-dom';
-import * as cache from './cache';
+import cache from 'webext-storage-cache';
 import * as api from './api';
-import {getOwnerAndRepo} from './utils';
+import {getRepoURL} from './utils';
 
 // This regex should match all of these combinations:
 // "This branch is even with master."
@@ -22,20 +22,22 @@ function parseBranchFromDom(): string | undefined {
 	}
 
 	// Parse the infobar
-	const [, branchName = undefined] = branchInfo.textContent!.trim().match(branchInfoRegex) || [];
-	return branchName; // `string` or undefined
+	const matches = branchInfoRegex.exec(branchInfo.textContent!.trim());
+	return matches ? matches[1] : undefined;
 }
 
-async function fetchFromApi(user: string, repo: string): Promise<any> {
-	const response = await api.v3(`repos/${user}/${repo}`);
-	if (response.default_branch) {
-		return response.default_branch;
+async function fetchFromApi(): Promise<string> {
+	const response = await api.v3(`repos/${getRepoURL()}`);
+	return response.default_branch as string;
+}
+
+export default async function (): Promise<string> {
+	const cached = await cache.get<string>(`default-branch:${getRepoURL()}`);
+	if (cached) {
+		return cached;
 	}
-}
 
-export default function (): Promise<any> {
-	const {ownerName, repoName} = getOwnerAndRepo();
-	return cache.getSet<string>(`default-branch:${ownerName}/${repoName}`,
-		() => parseBranchFromDom() || fetchFromApi(ownerName, repoName)
-	);
+	const branch = parseBranchFromDom() || await fetchFromApi();
+	await cache.set(`default-branch:${getRepoURL()}`, branch, 1);
+	return branch;
 }

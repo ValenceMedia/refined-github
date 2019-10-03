@@ -23,7 +23,7 @@ function add(): void {
 					className="btn btn-outline btn-sm border-blue rgh-closing-pr tooltipped tooltipped-se"
 					aria-label={infoBubble.getAttribute('aria-label')!}>
 					{isIssue ? icons.openPullRequest() : icons.commit()}
-					{isIssue ? ' ' + ref.textContent : ''}
+					{isIssue ? ' ' + ref.textContent! : ''}
 				</a>
 			</div>
 		);
@@ -36,8 +36,9 @@ function init(): void {
 }
 
 features.add({
-	id: 'highlight-closing-prs-in-open-issues',
-	description: 'Link to pull requests that will close the current issue when merged',
+	id: __featureName__,
+	description: 'Add link to an issue’s closing commit or pull request.',
+	screenshot: 'https://user-images.githubusercontent.com/1402241/37037746-8b8eac8a-2185-11e8-94f6-4d50a9c8a152.png',
 	include: [
 		features.isPRConversation,
 		features.isIssue

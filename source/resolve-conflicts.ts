@@ -2,15 +2,14 @@
 
 interface CodeMirrorInstance extends CodeMirror.Editor, CodeMirror.Doc {}
 
-// eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/prefer-namespace-keyword
-declare module CodeMirror {
+declare namespace CodeMirror {
 	interface LineHandle {
 		widgets: unknown[];
 		lineNo(): number;
 	}
 }
 
-const editor: CodeMirrorInstance = document.querySelector<any>('.CodeMirror').CodeMirror;
+const editor = document.querySelector<Element & {CodeMirror: CodeMirrorInstance}>('.CodeMirror')!.CodeMirror;
 
 // Event fired when each file is loaded
 editor.on('swapDoc', () => setTimeout(addWidget, 1));
