@@ -1,17 +1,14 @@
 import './ci-link.css';
-import domify from 'doma';
-import select from 'select-dom';
 import onetime from 'onetime';
 import features from '../libs/features';
 import {appendBefore} from '../libs/dom-utils';
 import {getRepoURL, getRepoBranch} from '../libs/utils';
+import fetchDom from '../libs/fetch-dom';
 
 const fetchStatus = onetime(async () => {
-	const url = `${location.origin}/${getRepoURL()}/commits/${getRepoBranch() || ''}`;
-	const response = await fetch(url);
-	const dom = domify(await response.text());
+	const url = `/${getRepoURL()}/commits/${getRepoBranch() || ''}`;
+	const icon = await fetchDom<HTMLElement>(url, '.commit-build-statuses');
 
-	const icon = select('.commit-build-statuses', dom);
 	if (!icon) {
 		return undefined;
 	}
@@ -36,6 +33,7 @@ async function init(): Promise<false | void> {
 
 features.add({
 	id: 'ci-link',
+	description: 'Add build status and link to CI after the repo’s title',
 	include: [
 		features.isRepo
 	],

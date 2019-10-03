@@ -161,6 +161,7 @@ test('isRepoDiscussionList', urlMatcherMacro, pageDetect.isRepoDiscussionList, [
 ], [
 	'http://github.com/sindresorhus/ava',
 	'https://github.com',
+	'https://github.com/sindresorhus/refined-github/issues/new',
 	'https://github.com/sindresorhus/refined-github/issues/170',
 	'https://github.com/sindresorhus/refined-github/pull/148',
 	'http://github.com/sindresorhus/issues',
@@ -379,4 +380,14 @@ test('isRepoSearch', urlMatcherMacro, pageDetect.isRepoSearch, [
 	'https://github.com/sindresorhus/refined-github',
 	'https://github.com/sindresorhus/search',
 	'https://github.com/search'
+]);
+
+test('isSingleTagPage', urlMatcherMacro, pageDetect.isSingleTagPage, [
+	'https://github.com/sindresorhus/refined-github/releases/tag/v1.0.0-beta.4',
+	'https://github.com/sindresorhus/refined-github/releases/tag/0.2.1'
+], [
+	'https://github.com/sindresorhus/refined-github/tags',
+	'https://github.com/sindresorhus/refined-github/releases',
+	'https://github.com/sindresorhus/refined-github',
+	'https://github.com/sindresorhus/refined-github/graphs'
 ]);

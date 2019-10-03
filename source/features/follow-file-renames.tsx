@@ -1,7 +1,3 @@
-/*
-In commits list, it enables Newer/Older buttons to follow file renames
-*/
-
 import React from 'dom-chef';
 import select from 'select-dom';
 import features from '../libs/features';
@@ -14,7 +10,7 @@ interface File {
 	status: string;
 }
 
-// TODO: ensure that pages with a single commit aren't fetched twice (api.ts' cache should do it automatically)
+// TODO: Ensure that pages with a single commit aren't fetched twice (api.ts' cache should do it automatically)
 async function findRename(
 	user: string,
 	repo: string,
@@ -40,7 +36,7 @@ async function init(): Promise<false | void> {
 
 		const fromKey = isNewer ? 'previous_filename' : 'filename';
 		const toKey = isNewer ? 'filename' : 'previous_filename';
-		const sha = isNewer ? select('.commit .sha') : select.all('.commit .sha').pop();
+		const sha = (isNewer ? select : select.last)('.commit .sha');
 
 		const files = await findRename(user, repo, sha!.textContent!.trim());
 
@@ -66,6 +62,7 @@ async function init(): Promise<false | void> {
 
 features.add({
 	id: 'follow-file-renames',
+	description: 'Enable Newer/Older buttons in commit lists to follow file renames',
 	include: [
 		features.isCommitList
 	],
